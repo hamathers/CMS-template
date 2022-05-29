@@ -7,13 +7,13 @@ import Sidebar from "./shared/Sidebar";
 import SettingsPanel from "./shared/SettingsPanel";
 import Footer from "./shared/Footer";
 import { withTranslation } from "react-i18next";
-import Authenticator from "./components/Authenticator/controllers/authenticator";
-import { Provider } from "react-redux";
-import { store } from "../store/store";
+import Login from "./base-template/user-pages/Login";
+import { connect } from "react-redux";
 
 class App extends Component {
   state = {};
   componentDidMount() {
+    console.log('havh', this.props.token)
     this.onRouteChanged();
   }
   render() {
@@ -26,21 +26,25 @@ class App extends Component {
     );
     let footerComponent = !this.state.isFullPageLayout ? <Footer /> : "";
     return (
-      <Provider store={store}>
-        <div className="container-scroller">
-          {navbarComponent}
-          <div className="container-fluid page-body-wrapper">
-            {sidebarComponent}
-            <div className="main-panel">
-              <div className="content-wrapper">
-                <AppRoutes />
-                {SettingsPanelComponent}
+      <>
+        {this.props.token ? (
+          <div className="container-scroller">
+            {navbarComponent}
+            <div className="container-fluid page-body-wrapper">
+              {sidebarComponent}
+              <div className="main-panel">
+                <div className="content-wrapper">
+                  <AppRoutes />
+                  {SettingsPanelComponent}
+                </div>
+                {footerComponent}
               </div>
-              {footerComponent}
             </div>
           </div>
-        </div>
-      </Provider>
+        ) : (
+          <Login />
+        )}
+      </>
     );
   }
 
@@ -69,25 +73,34 @@ class App extends Component {
       "/error-pages/error-500",
       "/general-pages/landing-page",
     ];
-    for (let i = 0; i < fullPageLayoutRoutes.length; i++) {
-      if (this.props.location.pathname === fullPageLayoutRoutes[i]) {
-        this.setState({
-          isFullPageLayout: true,
-        });
-        document
-          .querySelector(".page-body-wrapper")
-          .classList.add("full-page-wrapper");
-        break;
-      } else {
-        this.setState({
-          isFullPageLayout: false,
-        });
-        document
-          .querySelector(".page-body-wrapper")
-          .classList.remove("full-page-wrapper");
-      }
-    }
+    // for (let i = 0; i < fullPageLayoutRoutes.length; i++) {
+    //   if (this.props.location.pathname === fullPageLayoutRoutes[i]) {
+    //     this.setState({
+    //       isFullPageLayout: true,
+    //     });
+    //     document
+    //       .querySelector(".page-body-wrapper")
+    //       .classList.add("full-page-wrapper");
+    //     break;
+    //   } else {
+    //     this.setState({
+    //       isFullPageLayout: false,
+    //     });
+    //     document
+    //       .querySelector(".page-body-wrapper")
+    //       .classList.remove("full-page-wrapper");
+    //   }
+    // }
   }
 }
 
-export default withTranslation()(withRouter(App));
+const mapStateToProps = (state) => {
+  return {
+    token: state.authReducer.detail.token,
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  null
+)(withTranslation()(withRouter(App)));
